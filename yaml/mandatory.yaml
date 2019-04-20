@@ -3,12 +3,12 @@ name:
   - Alex
   - Masha
   - Jams
-    age:
+age:
       - 10
       - 20
       - 30
-    address: 4011 16th Ave S
-    phone numbers:
+address: 4011 16th Ave S
+phone numbers:
       name: 
         - Home
         - Work
