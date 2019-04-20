@@ -1,5 +1,13 @@
     name: Masha Bond
     age: 18
+    region:
+       state: 
+         shortName: OH
+         longName: Ohio
+         zip:
+            5: 12345
+            9: 12345-6789
+       
     address: 4011 16th Ave S
     phone numbers:
      - name: Home
