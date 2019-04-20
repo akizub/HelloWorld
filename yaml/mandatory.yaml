@@ -2,11 +2,11 @@ name:
   - mandatory
   - Alex
   - Masha
-  - Jams
+  - James
 age:
-      - 10
-      - 20
-      - 30
+  - 10
+  - 20
+  - 30
 address: 4011 16th Ave S
 phone numbers:
       name: 
