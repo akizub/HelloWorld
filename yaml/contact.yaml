@@ -10,9 +10,6 @@
        
     address: 4011 16th Ave S
     phone numbers:
-     - name: Home
-       number: 206-555-5138
-     - name: Work
-       number: 425-555-2306
-     - name: Mobile
-       number: 123-555-2306
+     name: Home
+     number: 206-555-5138
+     
