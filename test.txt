@@ -1,152 +1,46 @@
-PROD|DR|TEST|PT|ST|ST1|IT|DEV|UAT|RT|PERF|PPRD|BETA)_[A-Z]*_[0-9a-zA-Z-]*_[0-9]*
+package nw;
 
-package com.nw.yamlVerification;
-
-import java.io.BufferedReader;
-import java.io.FileInputStream;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.net.URL;
-import java.net.URLConnection;
-import java.util.Base64;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.io.File;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 import java.util.regex.Pattern;
 
-import com.esotericsoftware.yamlbeans.YamlReader;
+public class ValidateDotNetConfig {
 
-public class Verify {
+	public static void main(String args[]) {
+		try {
 
-	public static void main(String[] args) throws Exception {
-		if (args.length<2){
-			System.out.println("Usage: java -jar NRjml.jar mandatory.yml validated.yml\n Example:\n java -jar NRyml.jar ");
-			System.exit(0);
-		}
-		Verify verify = new Verify();
-		//Map map = verify.getRithub(args[0]);
-		//Map contact = verify.getRithub(args[1]);
-		Map map = verify.getYmlFromFile(args[0]);
-		Map contact = verify.getYmlFromFile(args[1]);
+			File stocks = new File("nw.xml");
+			DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+			DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+			Document doc = dBuilder.parse(stocks);
+			doc.getDocumentElement().normalize();
 
-		//System.out.println(":" + map);
-		//System.out.println("::" + contact);
-
-		verify.validate(contact, map, "");
-		System.out.println("Verification completed");
-	}
-
-	Map getYmlFromFile(String fileName) throws Exception {		
-		InputStream is = new FileInputStream(fileName); 
-
-		Reader urlreader = new BufferedReader(new InputStreamReader(is, "UTF-8"));
-		YamlReader reader = new YamlReader(urlreader);
-
-		return (Map) reader.read();
-	}
-	
-	Map getRithub(String raw) throws Exception {
-		URL url = new URL(raw);
-		String userpass = "kizubm1" + ":" + "04Sdv135";
-		String basicAuth = "Basic " + new String(Base64.getEncoder().encode(userpass.getBytes()));
-		
-		URLConnection connection = url.openConnection();
-		connection.setRequestProperty ("Authorization", basicAuth);
-		InputStream is = connection.getInputStream();
-
-		Reader urlreader = new BufferedReader(new InputStreamReader(is, "UTF-8"));
-		YamlReader reader = new YamlReader(urlreader);
-
-		return (Map) reader.read();
-	}
-
-	boolean validate(Map in, Map mandatory, String keys) { 		
-		for (Iterator iterator = in.keySet().iterator(); iterator.hasNext();) {
-			String key = (String) iterator.next();
-			Object value = in.get(key);
-
-			checkValue(in, mandatory, keys, key, value);
-		}
-		return true;
-	}
-
-	void checkValue(Map in, Map mandatory, String keys, String key, Object value) {
-		String newkey = keys.length() > 0 ? keys + "." + key : key;
-		if (value != null && value instanceof Map) {
-			//System.out.println(keys + " map:" + key);
-			validate((Map) value, mandatory, newkey);
-		} else if (value instanceof List) {
-			//System.out.println(keys + " List" + value);
-			List list = (List) value;
-			for (int i = 0; i < list.size(); i++) {
-				Object v = list.get(i);
-				checkValue(in, mandatory, keys + "." + i, "" + i, v);
-			}
-		} 
-		else {
-			//System.out.println(newkey + " string:" + value);
-		}
-
-		Object notFoundIn=isValid(newkey, value, mandatory);
-		
-		//System.out.println(newkey + "=" + value + ":" + ((notFoundIn==null)?" good":" not foound in: "+notFoundIn));
-		if (notFoundIn != null && newkey.startsWith("common")){
-			System.out.println((newkey.substring(7)) + "=" + value + ":" + ((notFoundIn==null)?" good":" not foound in: "+notFoundIn));
-		}
-	}
-
-	Object isValid(String key, Object value, Map mandatory) {
-		if (value instanceof Map || value instanceof List) return null;
-		String keys[] = key.split("\\.");
-		Object mv = null;
-		boolean found = true;
-		for (int i = 0; i < keys.length; i++) {
-			mv = mandatory.get(keys[i]);
-			if (mv != null) {
-				if (mv instanceof Map) {
-					mandatory = (Map) mv;
-					continue;
-				} else if (mv instanceof List) {
-					break;
-				}
-			} else {
-				found = false;
-			}
-		}
-
-		
-		if (found) {
-			// rule to validate value was found
-			if (mv instanceof List) {
-				if (((List) mv).contains(value))
-					return null; // one of provided values
-				if (((List) mv).contains("mandatory") && value != null)
-					return null;
-				// check whole list my regex
-				List list=(List)mv;
-				for (Object object : list) {
-					if (Pattern.matches((String)object, (String)value) ) return null; // matches by regex
-					
-				}
-				return mv;
-			}
-			if (value.equals(mv)) {
-				return null; // value is presented by itself
-			}
-			if ("mandatory".equals(mv) && value != null) {
-				return null; // value is mandatory and it exists
+			//System.out.println("root of xml file:" + doc.getDocumentElement().getNodeName());
+						
+			String name=doc.getElementsByTagName("name").item(0).getChildNodes().item(0).getNodeValue();
+			
+			if (!Pattern.matches("(PROD|DR|TEST|PT|ST|ST1|IT|DEV|UAT|RT|PERF|PPRD|BETA)_[A-Z]*_[0-9a-zA-Z-]*_[0-9]*", name)) {
+				System.out.println("Name ["+name+"] is invalid");
 			}
 			
-			// test by regex
-			if (Pattern.matches((String)mv, (String)value) ) return null; // matches by regex
-			
-			return mv;
-		}
+			String licenseKey=doc.getElementsByTagName("service").item(0).getAttributes().getNamedItem("licenseKey").getNodeValue();
+			if (licenseKey==null) {
+				System.out.println("Absent License Key");
+			}
+			else if (!"abc".equals(licenseKey)) {
+				System.out.println("License Key is invalid");
+			}
 
-		return null;
+			System.out.println("Verification completed");
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			System.out.println("config.xml has invalid structure");
+		}
 	}
 
 }
-
-
